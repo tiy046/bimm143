@@ -23,8 +23,8 @@ boxplot(x)
 summary(x)
 ```
 
-    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    ## -3.70038 -0.65187  0.02631  0.01588  0.68449  3.68658
+    ##      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+    ## -3.307016 -0.663846 -0.026634 -0.005752  0.636856  3.356527
 
 ``` r
 hist(x)
