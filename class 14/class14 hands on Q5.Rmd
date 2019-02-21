@@ -1,0 +1,97 @@
+---
+title: "Class 14: Genomic Informatics 1"
+author: "Tingyi Yang"
+date: "2/21/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Asthma SNPs in MXL population:
+read file from Ensembl 
+http://uswest.ensembl.org/Homo_sapiens/Variation/Sample?db=core;r=17:39894595-39895595;v=rs8067378;vdb=variation;vf=362656008;sample=MXL#373531_tablePanel
+
+```{r}
+sample <- read.csv("sample.csv")
+head(sample)
+```
+
+##Use table to count genotype.##
+
+```{r}
+table(sample$Genotype..forward.strand.)
+```
+
+##Or, use sum and a logical statement to count the genotype##
+```{r}
+sum(sample$Genotype..forward.strand. == "G|G")
+```
+```{r}
+percentage <- sum(sample$Genotype..forward.strand. == "G|G")/nrow(sample) *100
+percentage
+```
+
+## RNA-Seq 
+```{r}
+q1<- "DDDDCDEDCDDDDBBDDDCC@"
+q2<-"++:++++=DH++@)'6&(((+(+(8(+8(+(3283>ADB8?8??B<ABDCA>9@@ACBDCCCCDCCCDCDDDDDD@"
+library(seqinr)
+library(gtools)
+
+phred1 <- asc(s2c(q1)) - 33
+phred2 <- asc(s2c(q2)) - 33
+
+phred1
+phred2
+```
+
+##Section 4: Population Scale Analysis 
+
+Does the genotype for rs9067378 influence the expression of the important asthma linked genes we found?
+```{r}
+geno <- read.table("230patients.txt")
+```
+
+```{r}
+table(geno$geno)
+```
+
+```{r}
+inds <- geno$geno == "G/G"
+summary(geno$exp[inds])
+```
+
+```{r}
+inds.aa <- geno$geno == "A/A"
+summary(geno$exp[inds.aa])
+```
+
+```{r}
+inds.ag <- geno$geno == "A/G"
+summary(geno$exp[inds.ag])
+```
+Let's use a nice figure to show the distribution of these expression values.
+```{r}
+boxplot(exp ~ geno, geno)
+```
+
+
+
+
+```{r}
+library(ggplot2)
+## Boxplot
+ggplot(geno, aes(geno, exp)) + geom_boxplot()
+```
+
+
+```{r}
+# Boxplot with the data shown
+ggplot(geno, aes(geno, exp, fill=geno)) + 
+  geom_boxplot(notch=TRUE, outlier.shape = NA) + 
+  geom_jitter(shape=16, position=position_jitter(0.2), alpha=0.4)
+```
+
+
+
