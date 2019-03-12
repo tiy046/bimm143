@@ -1,0 +1,30 @@
+---
+title: "class 16 quiz question"
+author: "Tingyi Yang"
+date: "3/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+df1 <- data.frame(x=c("a", "b"), y=2:3)
+df1
+
+df2 <- data.frame(x=1:2, y=2:3)
+df2
+
+is.vector(df1[,1])
+is.vector(df2[,1])
+```
+
+terminal:
+
+cp README.cd /Users/tingyi/Desktop
+or 
+cp README.cd ~/Desktop
+
+mv README.md tmp.md
+ls tmp.md

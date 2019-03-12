@@ -193,14 +193,36 @@ res
 ```{r}
 summary(res)
 ```
+```{r}
+res01 <- results(dds, alpha=0.01)
+summary(res01)
+```
 
 ```{r}
 plot(res$log2FoldChange, -log(res$padj))
 ```
 
+Setup point color vector
+```{r}
+mycols <- rep("gray", nrow(res01))
+mycols[abs(res01$log2FoldChange)>2] <- "red"
+```
+```{r}
+##(inds--limit, True only)
+inds<- (res01$padj<0.01)&(abs(res05$log2FoldChange)>2)
+mycols[inds] <- "blue"
+```
+##Volcano plot with custom colors
+```{r}
+plot(res01$log2FoldChange, -log(res01$padj), col=mycols, ylab= "-Log(P-value)", xlab = "Log2(FoldChange)")
+```
+```{r}
+abline(v=c(-2,2), col="gray", lty=2)
+abline(h=-log(0.1), col="gray", lty=2)
+```
 
-
-
+Dr. Grant's link:
+http://tinyurl.com/class15-classmd 
 
 
 

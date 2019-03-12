@@ -1,0 +1,157 @@
+---
+title: "class 18"
+author: "Tingyi Yang"
+date: "3/7/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+2. The GenomicDataCommons R package
+The GenomicDataCommons Bioconductor package provides functions for querying, accessing, and mining the NCI-GDC in R. Using this package allows us to couple large cancer genomics data sets (for example the actual RNA-Seq, WXS or SNP data) directly to the plethora of state-of-the-art bioinformatics methods available in R. This is important because it greatly facilitates both targeted and exploratory analysis of molecular cancer data well beyond that accessible via a web portal.
+
+This section highlights how one can couple the GenomicDataCommons and maftools bioconductor packages to quickly gain insight into public cancer genomics data-sets.
+
+We will first use functions from the GenomicDataCommons package to identify and then fetch somatic variant results from the NCI-GDC and then provide a high-level assessment of those variants using the maftools package. The later package works with Mutation Annotation Format or MAF format files used by GDC and others to store somatic variants.
+
+The workflow will be:
+
+Install packages if not already installed
+Load libraries
+Identify and download somatic variants for a representative TCGA dataset, in this case pancreatic adenocarcinoma.
+Use maftools to provide rich summaries of the data.
+source("https://bioconductor.org/biocLite.R")
+biocLite(c("GenomicDataCommons", "maftools"))
+Once installed, load the packages, as usual.
+
+library(GenomicDataCommons)
+library(maftools)
+Now lets check on GDC status:
+
+GenomicDataCommons::status()
+## $commit
+## [1] "acaf65369f6cea8337c6b59f0888761c9ed34654"
+## 
+## $data_release
+## [1] "Data Release 13.0 - September 27, 2018"
+## 
+## $status
+## [1] "OK"
+## 
+## $tag
+## [1] "1.17.1"
+## 
+## $version
+## [1] 1
+If this statement results in an error such as SSL connect error, then please see the troubleshooting section here.
+```{r}
+status()
+```
+
+3. Querying the GDC from R
+```{r}
+cases_by_project <- cases() %>%
+  facet("project.project_id") %>%
+  aggregations()
+head(cases_by_project)
+```
+```{r}
+x <- cases_by_project$project.project_id
+barplot(x$doc_count,names.arg = x$key, las=2, log="y")
+```
+4. Variant analysis with R
+```{r}
+maf.files = files() %>%
+    filter(~ cases.project.project_id == 'TCGA-PAAD' &
+        data_type == 'Masked Somatic Mutation' &
+        data_format == "MAF" &
+        analysis.workflow_type == "MuTect2 Variant Aggregation and Masking"
+    ) %>%
+    response_all()
+```
+```{r}
+uid <- ids(maf.files)
+uid
+```
+
+```{r}
+maffile = gdcdata(uid)
+
+maffile
+```
+
+```{r}
+vars = read.maf(maf = maffile, verbose = FALSE)
+plotmafSummary(maf =vars, rmOutlier = TRUE,
+               addStat = 'median', dashboard = TRUE,
+               titvRaw = FALSE)
+```
+
+##Part 2:Designing a personalized cancer vaccine
+Section 1. Protein sequences from healthy and tumor tissue
+
+```{r}
+seqs <- read.fasta("lecture18_sequences.fa")
+seqs
+```
+
+```{r}
+## Calculate positional identity scores
+ide <- conserv(seqs$ali, method="identity")
+mutant.sites <- which(ide < 1) 
+
+```
+
+```{r}
+gaps <- gap.inspect(seqs)
+mutant.sites <- mutant.sites[mutant.sites %in% gaps$f.inds]
+
+mutant.sites
+```
+```{r}
+## Make a "names" label for our output sequences (one per mutant)
+mutant.names <- paste0(seqs$ali["P53_wt",mutant.sites],
+                       mutant.sites,
+                       seqs$ali["P53_mutant",mutant.sites])
+
+mutant.names
+```
+
+```{r}
+## Sequence positions surounding each mutant site
+start.position <- mutant.sites - 8
+end.position <-  mutant.sites + 8
+
+# Blank matrix to store sub-sequences
+store.seqs <- matrix("-", nrow=length(mutant.sites), ncol=17)
+rownames(store.seqs) <- mutant.names
+
+## Extract each sub-sequence
+for(i in 1:length(mutant.sites)) {
+  store.seqs[i,] <- seqs$ali["P53_mutant",start.position[i]:end.position[i]]
+}
+
+store.seqs
+```
+
+
+```{r}
+## Output a FASTA file for further analysis
+write.fasta(seqs=store.seqs, ids=mutant.names, file="subsequences.fa")
+```
+
+
+
+
+Finally lets output all these sequences to a FASTA file for further analysis with the IEDB HLA binding prediction website http://tools.iedb.org/mhci/.
+
+Allele	Length	
+HLA-A*02:01	9	
+HLA-A*68:01	9	
+HLA-B*07:02	9	
+HLA-B*35:01	9	
+		

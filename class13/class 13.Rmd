@@ -1,0 +1,71 @@
+---
+title: "class 13"
+author: "Tingyi Yang"
+date: "2/19/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages("bio3d")
+library(bio3d)
+HSG <- get.pdb("1hsg")
+```
+```{r}
+hiv <- read.pdb(HSG)
+```
+read file in R and clean it up(remove non-protein bits), also we will save the ligand into a separate file
+```{r}
+hiv
+```
+Q1:  What is the name of the two non protein resid values in this structure? What does resid correspond to and how would you get a listing of all reside values in this structure?
+HOH (127) and MK1(1)
+
+```{r}
+prot <- trim.pdb(hiv, "protein")
+prot
+```
+```{r}
+write.pdb(prot, file="1hsg_protein.pdb")
+
+```
+
+```{r}
+lig <- trim.pdb(hiv, "ligand")
+lig
+```
+
+
+```{r}
+write.pdb(lig, file="1hsg_ligand.pdb")
+```
+
+##prepare pdb file for docking##
+
+##turn aall.pdbqt file into PDB##
+```{r}
+library(bio3d)
+res <- read.pdb("all.pdbqt", multi=TRUE)
+write.pdb(res, "results.pdb")
+```
+```{r}
+res <- read.pdb("all.pdbqt", multi=TRUE)
+ori <- read.pdb("ligand.pdbqt")
+rmsd(ori, res)
+```
+##normal made analysis
+```{r}
+pdb <- read.pdb("1HEL")
+
+m <- nma(pdb)
+plot(m)
+
+```
+
+```{r}
+mktrj(m,mode=7, file="nma_7.pdb")
+```
+

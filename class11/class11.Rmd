@@ -1,0 +1,91 @@
+---
+title: "Class 11: Structual Bioinformatics 1"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section 1. The PDB
+Q1: determine the percentage of structures solved by X-Ray and Electron Microscopy. From the website what proportion of structures are protein?
+```{r}
+stats <- read.csv("Data Export Summary.csv", row.names = 1)
+stats
+```
+My method:
+```{r}
+xray=stats[1,6]
+
+# Sum all elements of a column
+Sum_val=sum(stats$Total)
+perce <- (xray/Sum_val) *100
+perce
+```
+Barry's method:
+```{r}
+stats$Total[1]/sum(stats$Total) * 100
+```
+```{r}
+stats$Total/sum(stats$Total) * 100
+```
+
+
+```{r}
+percentage.by.method <- stats$Total/sum(stats$Total) * 100
+names(percentage.by.method) <- rownames(stats)
+percentage.by.method
+```
+
+```{r}
+sum(stats$Proteins)/ sum(stats$Total) *100
+```
+Q2: Type HIV in the PDB website search box on the home page and determine how many
+HIV-1 protease structures are in the current PDB?
+
+bio3d
+```{r}
+library(bio3d)
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+```{r}
+attributes(pdb)
+```
+
+```{r}
+head(pdb$atom)
+```
+```{r}
+pdb$atom[1:2, c("eleno", "elety", "x","y","z")]
+```
+
+```{r}
+str(pdb$atom)
+```
+
+```{r}
+prot.inds <- atom.select(pdb, "protein")
+
+prot.inds
+```
+```{r}
+pdb$atom[prot.inds$atom,]
+```
+
+```{r}
+prot.pdb <- trim.pdb(pdb, prot.inds)
+write.pdb(prot.pdb, file= "protein.pdb")
+```
+Lets do the same for our drug
+```{r}
+lig.inds <- atom.select(pdb, "ligand")
+lig.pdb <- trim.pdb(pdb, lig.inds)
+write.pdb(lig.pdb, file= "ligand.pdb")
+```
+```{r}
+library(bio3d.view)
+view(pdb,"overview")
+```
+
